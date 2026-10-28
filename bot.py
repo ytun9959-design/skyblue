@@ -275,7 +275,7 @@ def get_remaining_data(user_id):
             
             if remaining_gb < 0: remaining_gb = 0
             
-            # 🚨 မြန်မာစံတော်ချိန်အတိုင်း အတိအကျ တွက်ချက်ခြင်း (UTC + 6:30)
+            # မြန်မာစံတော်ချိန်အတိုင်း အတိအကျ တွက်ချက်ခြင်း (UTC + 6:30)
             expiry = client_data.get("expiryTime", 0)
             if expiry == 0:
                 exp_date = "မကုန်ဆုံးပါ"
@@ -342,7 +342,7 @@ def delete_vless_account(username):
         return False, str(e)
 
 # ============================================================
-# 📱 Telegram Bot Handlers
+# 📱 Telegram Bot Handlers (Main Menu)
 # ============================================================
 
 def show_main_menu(chat_id):
@@ -682,7 +682,7 @@ def handle_receipt(message):
         markup.add(types.InlineKeyboardButton(text="❌ ပယ်ဖျက်မည်", callback_data=f"reject_{user_id}"))
 
         caption = (f"🔔 ငွေပေးချေမှု အသစ်\n\n"
-                                      f"👤 အသုံးပြုသူ: {message.from_user.full_name}\n"
+                   f"👤 အသုံးပြုသူ: {message.from_user.full_name}\n"
                    f"🆔 ID: {user_id}\n"
                    f"🌐 ဝန်ဆောင်မှု: {info['name']}\n"
                    f"💰 ဈေးနှုန်း: {info['price']}")
@@ -788,3 +788,4 @@ if __name__ == '__main__':
             print(f"Error တက်သွားပါသည်: {e}")
             print("5 စက္ကန့်အတွင်း ပြန်လည် စတင်ပါမည်...")
             time.sleep(5)
+
