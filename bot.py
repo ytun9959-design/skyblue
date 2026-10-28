@@ -70,18 +70,19 @@ CREDIT_PACKAGES = {
     "credit200": {"name": "200 Credits", "price": "18000 Ks", "credits": 200},
 }
 
+# 🚨 Reseller အတွက် VPN (Credit နဲ့)
 RESELLER_SERVERS = {
-    "res1d":  {"name": "🇹🇭 ၁ ရက် စမ်းသပ် (5 Credits)", "credits": 5, "days": 1},
-    "res15d": {"name": "🇹🇭 ၁၅ ရက် VPN (25 Credits)", "credits": 25, "days": 15},
-    "res30d": {"name": "🇹🇭 ၃၀ ရက် VPN (50 Credits)", "credits": 50, "days": 30},
-    "res60d": {"name": "🇹🇭 ၆၀ ရက် VPN (100 Credits)", "credits": 100, "days": 60},
+    "res1d":  {"name": "🇹🇭 ၁ ရက် စမ်းသပ် (5 Credits - 5GB)", "credits": 5, "days": 1, "gb": 5},
+    "res15d": {"name": "🇹🇭 ၁၅ ရက် VPN (25 Credits - 30GB)", "credits": 25, "days": 15, "gb": 30},
+    "res30d": {"name": "🇹🇭 ၃၀ ရက် VPN (50 Credits - 60GB)", "credits": 50, "days": 30, "gb": 60},
 }
 
+# 🚨 သာမန်ဝယ်ယူသူများအတွက် VPN
 SERVERS = {
-    "norm1d":  {"name": "🇹🇭 Thailand VPN - ၁ ရက် (စမ်းသပ်)", "price": "1000 Ks", "days": 1},
-    "norm15d": {"name": "🇹🇭 Thailand VPN - ၁၅ ရက်", "price": "2500 Ks", "days": 15},
-    "norm1m":  {"name": "🇹🇭 Thailand VPN - ၁ လ (၃၀ ရက်)", "price": "5000 Ks", "days": 30},
-    "norm2m":  {"name": "🇹🇭 Thailand VPN - ၂ လ (၆၀ ရက်)", "price": "9000 Ks", "days": 60},
+    "norm1d":  {"name": "🇹🇭 Thailand VPN - ၁ ရက် (5GB)", "price": "1000 Ks", "days": 1, "gb": 5},
+    "norm15d": {"name": "🇹🇭 Thailand VPN - ၁၅ ရက် (30GB)", "price": "2500 Ks", "days": 15, "gb": 30},
+    "norm1m":  {"name": "🇹🇭 Thailand VPN - ၁ လ (60GB)", "price": "5000 Ks", "days": 30, "gb": 60},
+    "norm2m":  {"name": "🇹🇭 Thailand VPN - ၂ လ (120GB)", "price": "9000 Ks", "days": 60, "gb": 120},
 }
 
 user_data = {}
@@ -89,13 +90,15 @@ user_data = {}
 # 🚨 ဒေတာ သိမ်းဆည်းရန် ဖိုင်များ
 CREDIT_FILE = "reseller_credits.json"
 JOINED_FILE = "joined_users.json"
+VPN_DATA_FILE = "vpn_accounts.json" # ဝယ်သူရဲ့ လင့်ခ်နဲ့ Data သိမ်းရန်
 
 user_credits = {}
 user_names = {}
 joined_users = set()
+vpn_accounts = {} # { user_id: [ {link, expire, gb, email} ] }
 
 def load_data():
-    global user_credits, user_names, joined_users
+    global user_credits, user_names, joined_users, vpn_accounts
     try:
         if os.path.exists(CREDIT_FILE):
             with open(CREDIT_FILE, "r", encoding="utf-8") as f:
@@ -106,6 +109,10 @@ def load_data():
         if os.path.exists(JOINED_FILE):
             with open(JOINED_FILE, "r", encoding="utf-8") as f:
                 joined_users = set(json.load(f))
+                
+        if os.path.exists(VPN_DATA_FILE):
+            with open(VPN_DATA_FILE, "r", encoding="utf-8") as f:
+                vpn_accounts = json.load(f)
     except Exception as e:
         print(f"Data Load Error: {e}")
 
@@ -115,6 +122,8 @@ def save_data():
             json.dump({"credits": user_credits, "names": user_names}, f, ensure_ascii=False, indent=4)
         with open(JOINED_FILE, "w", encoding="utf-8") as f:
             json.dump(list(joined_users), f)
+        with open(VPN_DATA_FILE, "w", encoding="utf-8") as f:
+            json.dump(vpn_accounts, f, ensure_ascii=False, indent=4)
     except Exception as e:
         print(f"Data Save Error: {e}")
 
@@ -162,7 +171,7 @@ def check_join(user_id):
 # ============================================================
 # 🛠️ Panel Login ဝင်ပြီး အကောင့်ဖန်တီးမည့် Function
 # ============================================================
-def auto_create_vless_account(username, days):
+def auto_create_vless_account(username, days, gb):
     try:
         session = requests.Session()
         session.verify = False
@@ -173,10 +182,13 @@ def auto_create_vless_account(username, days):
         login_res = session.post(login_url, json=login_data, timeout=15)
         
         if login_res.status_code != 200 or not login_res.json().get("success"):
-            return False, "Login မအောင်မြင်ပါ။"
+            return False, "Login မအောင်မြင်ပါ။", None
 
         expire_time = int((datetime.datetime.now() + datetime.timedelta(days=days)).timestamp() * 1000)
         new_uuid = str(uuid.uuid4())
+        
+        # 1GB = 1073741824 bytes
+        total_gb_bytes = int(gb) * 1073741824 
         
         add_url = f"{PANEL_URL}/{WEB_BASE_PATH}/panel/api/inbounds/addClient"
         
@@ -186,7 +198,7 @@ def auto_create_vless_account(username, days):
                 "flow": "",
                 "email": username,
                 "limitIp": 1, 
-                "totalGB": 0,
+                "totalGB": total_gb_bytes, # 🚨 Data ကန့်သတ်ချက်
                 "expiryTime": expire_time,
                 "enable": True,
                 "tgId": "",
@@ -204,14 +216,84 @@ def auto_create_vless_account(username, days):
         
         if response.status_code == 200 and response.json().get("success"):
             vless_link = f"vless://{new_uuid}@{SERVER_IP}:{SERVER_PORT}?type=ws&encryption=none&path={PATH}&host={HOST}&security=none#{username}"
-            return True, vless_link
+            return True, vless_link, expire_time
         else:
             if "Duplicate email" in response.text:
-                return False, "Duplicate"
-            return False, f"Error: {response.text}"
+                return False, "Duplicate", None
+            return False, f"Error: {response.text}", None
             
     except Exception as e:
-        return False, str(e)
+        return False, str(e), None
+
+# ============================================================
+# 📊 လက်ကျန် Data စစ်ဆေးသည့် Function
+# ============================================================
+def get_remaining_data(user_id):
+    if str(user_id) not in vpn_accounts or not vpn_accounts[str(user_id)]:
+        return "⚠️ သင့်တွင် VPN အကောင့် မရှိပါ။"
+        
+    try:
+        session = requests.Session()
+        session.verify = False
+        
+        login_url = f"{PANEL_URL}/{WEB_BASE_PATH}/login"
+        login_data = {"username": PANEL_USER, "password": PANEL_PASS}
+        login_res = session.post(login_url, json=login_data, timeout=15)
+        
+        if login_res.status_code != 200 or not login_res.json().get("success"):
+            return "⚠️ Panel Login မအောင်မြင်ပါ။"
+
+        list_url = f"{PANEL_URL}/{WEB_BASE_PATH}/panel/api/inbounds/list"
+        res_list = session.get(list_url, timeout=15)
+        
+        clients = []
+        for inbound in res_list.json().get("obj", []):
+            if inbound["id"] == int(INBOUND_ID):
+                settings = json.loads(inbound["settings"])
+                clients = settings.get("clients", [])
+                break
+                
+        text = "📊 **သင့် VPN အကောင့် အခြေအနေ**\n\n"
+        
+        for acc in vpn_accounts[str(user_id)]:
+            email = acc.get("email")
+            
+            client_data = None
+            for c in clients:
+                if c.get("email") == email:
+                    client_data = c
+                    break
+                    
+            if not client_data:
+                text += f"❌ `{email}` (ဖျက်ခံထားရသည် / မတွေ့ပါ)\n\n"
+                continue
+                
+            total_gb = client_data.get("totalGB", 0) / 1073741824
+            up = client_data.get("up", 0) / 1073741824
+            down = client_data.get("down", 0) / 1073741824
+            used = up + down
+            remaining = total_gb - used
+            
+            if remaining < 0: remaining = 0
+            
+            expiry = client_data.get("expiryTime", 0)
+            if expiry == 0:
+                exp_date = "မကုန်ဆုံးပါ"
+            else:
+                exp_date = datetime.datetime.fromtimestamp(expiry / 1000).strftime('%Y-%m-%d %H:%M')
+            
+            text += (
+                f"👤 **အကောင့်:** `{email}`\n"
+                f"📅 **ကုန်ဆုံးမည့်ရက်:** {exp_date}\n"
+                f"📦 **သတ်မှတ် Data:** {total_gb:.1f} GB\n"
+                f"📉 **သုံးပြီး:** {used:.2f} GB\n"
+                f"✅ **လက်ကျန်:** **{remaining:.2f} GB**\n\n"
+            )
+            
+        return text
+    except Exception as e:
+        return f"⚠️ Error: {e}"
+
 # ============================================================
 # 🗑️ အကောင့်ဖျက်မည့် Function
 # ============================================================
@@ -230,9 +312,6 @@ def delete_vless_account(username):
         list_url = f"{PANEL_URL}/{WEB_BASE_PATH}/panel/api/inbounds/list"
         res_list = session.get(list_url, timeout=15)
         
-        if res_list.status_code != 200:
-            return False, "Inbound စာရင်း ဆွဲယူလို့မရပါ။"
-
         clients = []
         for inbound in res_list.json().get("obj", []):
             if inbound["id"] == int(INBOUND_ID):
@@ -268,13 +347,14 @@ def show_main_menu(chat_id):
     markup = types.InlineKeyboardMarkup()
     markup.add(types.InlineKeyboardButton(text="🛒 သာမန်ဝယ်ယူရန် (Normal)", callback_data="menu_normal"))
     markup.add(types.InlineKeyboardButton(text="💼 Reseller ဝယ်ယူရန် (Credit)", callback_data="menu_reseller"))
+    markup.add(types.InlineKeyboardButton(text="📊 လက်ကျန် Data စစ်ရန်", callback_data="check_data"))
     
     welcome_text = (
         "🌟 **Sky Blue Channel မှ ကြိုဆိုပါတယ်** 🌟\n\n"
         "📌 **စည်းကမ်းချက်များ**\n"
         "🔸 Server error ဖြစ်ပါက 100% တာဝန်ယူပါတယ်။\n"
         "🔸 ဆိုင်ဖက်က VPN ပိတ်ခဲ့ရင် လုံးဝတာဝန်မယူပါ။\n"
-        "🔸 တစ်စုံတစ်ရာ ပြဿနာဖြစ်ပါက Owner ဆုံးဖြတ်ချက်အတိုင်း တာဝန်ယူပါသည်။\n\n"
+        "🔸 Data ပမာဏ ပြည့်သွားပါက သက်တမ်းမကုန်သေးလည်း ချိတ်ဆက်မှု ပြတ်တောက်သွားပါမည်။\n\n"
         "🙏 ဝယ်ယူအားပေးမှုကို အထူးကျေးဇူးတင်ပါတယ်။\n\n"
         "👇 ဝယ်ယူရန် ရွေးချယ်ပါ -"
     )
@@ -433,6 +513,13 @@ def verify_join(call):
     else:
         bot.answer_callback_query(call.id, "❌ Channel ကို Join မထားရသေးပါဘူး။", show_alert=True)
 
+@bot.callback_query_handler(func=lambda call: call.data == "check_data")
+def check_data_menu(call):
+    user_id = call.from_user.id
+    bot.answer_callback_query(call.id, "⏳ Data စစ်ဆေး
+    text = get_remaining_data(user_id)
+    bot.send_message(call.message.chat.id, text, parse_mode='Markdown')
+
 @bot.callback_query_handler(func=lambda call: call.data == "menu_normal")
 def menu_normal(call):
     markup = types.InlineKeyboardMarkup()
@@ -535,12 +622,23 @@ def process_vipbuy(call):
     while True:
         vip_num = get_next_vip_number()
         username = f"VIP{vip_num}_{user_id}"
-        success, result = auto_create_vless_account(username, info["days"])
+        success, result, exp_time = auto_create_vless_account(username, info["days"], info["gb"])
         if success: break
         elif result == "Duplicate": continue
         else: break
 
     if success:
+        # မှတ်တမ်းတင်မယ်
+        if uid_str not in vpn_accounts:
+            vpn_accounts[uid_str] = []
+        vpn_accounts[uid_str].append({
+            "email": username,
+            "link": result,
+            "expire": exp_time,
+            "gb": info["gb"]
+        })
+        save_data()
+        
         bot.send_message(user_id, f"🎉 သင့် VPN အကောင့် အဆင်သင့်ဖြစ်ပါပြီ!\n\n📄 လင့်ခ်:\n`{result}`\n\n💰 လက်ကျန် Credit: **{user_credits[uid_str]}**", parse_mode='Markdown')
         try:
             bot.send_message(ADMIN_ID, f"🔔 Reseller ဝယ်ယူမှု\n👤 ID: {user_id}\n🎫 အကောင့်: {username}\n💰 ကျန်ရှိ Credit: {user_credits[uid_str]}")
@@ -593,7 +691,7 @@ def handle_receipt(message):
         bot.send_message(ADMIN_ID, f"⚠️ ပြေစာ လက်ခံရာတွင် Error တက်နေသည်:\n{e}")
         bot.reply_to(message, "⚠️ စနစ်ချို့ယွင်းမှု ရှိနေပါသည်။ ခဏနေမှ ပြန်ကြိုးစားပါ။")
 
-# --- 🚨 Admin အတည်ပြုခြင်း (ချက်ချင်း အလုပ်ဖြစ်မည်) ---
+# --- 🚨 Admin အတည်ပြုခြင်း ---
 @bot.callback_query_handler(func=lambda call: call.data.startswith('approve_'))
 def admin_approve(call):
     if call.from_user.id != ADMIN_ID: return
@@ -628,16 +726,28 @@ def admin_approve(call):
     else:
         def process_vpn():
             try:
-                info = SERVERS.get(key, {"days": 30})
+                info = SERVERS.get(key, {"days": 30, "gb": 60})
                 while True:
                     vip_num = get_next_vip_number()
                     username = f"VIP{vip_num}_{user_id}"
-                    success, result = auto_create_vless_account(username, info["days"])
+                    success, result, exp_time = auto_create_vless_account(username, info["days"], info["gb"])
                     if success: break
                     elif result == "Duplicate": continue
                     else: break
 
                 if success:
+                    # မှတ်တမ်းတင်မယ်
+                    uid_str = str(user_id)
+                    if uid_str not in vpn_accounts:
+                        vpn_accounts[uid_str] = []
+                    vpn_accounts[uid_str].append({
+                        "email": username,
+                        "link": result,
+                        "expire": exp_time,
+                        "gb": info["gb"]
+                    })
+                    save_data()
+                    
                     bot.send_message(user_id, f"🎉 သင့် VPN အကောင့် အဆင်သင့်ဖြစ်ပါပြီ!\n\n📄 လင့်ခ်:\n`{result}`\n\n*(Copy ကူးယူပါ)*", parse_mode='Markdown')
                     try:
                         bot.send_message(call.message.chat.id, f"✅ `{username}` အကောင့်ဖန်တီးပြီး ပို့ပေးလိုက်ပါပြီ။")
@@ -662,7 +772,7 @@ def admin_reject(call):
     if call.from_user.id != ADMIN_ID: return
     user_id = int(call.data.split("_")[1])
     bot.send_message(user_id, "❌ သင့်ငွေပေးချေမှုကို ပယ်ဖျက်လိုက်ပါသည်။")
-    bot.edit_message_caption(chat_id=call.message.chat.id, message_id=call.message.message_id, caption="❌ သင့်ငွေကျပ် ပယ်ဖျက်လိုက်ပါပြီ။")
+    bot.edit_message_caption(chat_id=call.message.chat.id, message_id=call.message.message_id, caption=call.message.caption + "\n\n❌ ပယ်ဖျက်လိုက်ပါပြီ။")
 
 # ============================================================
 # 🚀 Bot စတင်ခြင်း (Internet ပြတ်လည်း အလိုအလျောက် ပြန်စမည်)
@@ -676,5 +786,4 @@ if __name__ == '__main__':
             print(f"Error တက်သွားပါသည်: {e}")
             print("5 စက္ကန့်အတွင်း ပြန်လည် စတင်ပါမည်...")
             time.sleep(5)
-
 
