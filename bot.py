@@ -645,7 +645,7 @@ def admin_reject(call):
     if call.from_user.id != ADMIN_ID: return
     user_id = int(call.data.split("_")[1])
     bot.send_message(user_id, "❌ သင့်ငွေပေးချေမှုကို ပယ်ဖျက်လိုက်ပါသည်။")
-    bot.edit_message_caption(chat_id=call.message.chat.id, message_id=call.mess    bot.edit_message_caption(chat_id=call.message.chat.id, message_id=call.message.message_id, caption=call.message.caption + "\n\n❌ ပယ်ဖျက်လိုက်ပါပြီ။")
+    bot.edit_message_caption(chat_id=call.message.chat.id, message_id=call.message.message_id, caption="❌ သင့်ငွေကျပ် ပယ်ဖျက်လိုက်ပါပြီ။")
 
 # ============================================================
 # 🚀 Bot စတင်ခြင်း (Internet ပြတ်လည်း အလိုအလျောက် ပြန်စမည်)
