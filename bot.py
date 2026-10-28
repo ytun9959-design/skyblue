@@ -223,7 +223,7 @@ def auto_create_vless_account(username, days, gb):
         return False, str(e), None
 
 # ============================================================
-# 📊 လက်ကျန် Data စစ်ဆေးသည့် Function (အချိန်ဇုန် အတိအကျ)
+# 📊 လက်ကျန် Data စစ်ဆေးသည့် Function (Data ကို တိတိကျကျပြမည်)
 # ============================================================
 def get_remaining_data(user_id):
     if str(user_id) not in vpn_accounts or not vpn_accounts[str(user_id)]:
@@ -262,7 +262,7 @@ def get_remaining_data(user_id):
                     break
                     
             if not client_data:
-                text += f"❌ `{email}` (ဖျက်ခံထားရသည် / မတွေ့ပါ)\n\n"
+                text += f"❌ **အကောင့်:** `{email}` (ဖျက်ခံထားရသည် / မတွေ့ပါ)\n\n"
                 continue
                 
             total_bytes = client_data.get("totalGB", 0)
@@ -275,7 +275,6 @@ def get_remaining_data(user_id):
             
             if remaining_gb < 0: remaining_gb = 0
             
-            # မြန်မာစံတော်ချိန်အတိုင်း အတိအကျ တွက်ချက်ခြင်း (UTC + 6:30)
             expiry = client_data.get("expiryTime", 0)
             if expiry == 0:
                 exp_date = "မကုန်ဆုံးပါ"
@@ -285,7 +284,7 @@ def get_remaining_data(user_id):
                 exp_date = exp_mm.strftime('%Y-%m-%d %H:%M')
             
             text += (
-                f"👤 **အကောင့်:** `{email}`\n"
+                f"📁 **အကောင့်:** `{email}`\n"
                 f"📅 **ကုန်ဆုံးမည့်ရက်:** {exp_date}\n"
                 f"📦 **သတ်မှတ် Data:** {total_gb:.2f} GB\n"
                 f"📉 **သုံးပြီး:** {used_gb:.2f} GB\n"
@@ -788,4 +787,3 @@ if __name__ == '__main__':
             print(f"Error တက်သွားပါသည်: {e}")
             print("5 စက္ကန့်အတွင်း ပြန်လည် စတင်ပါမည်...")
             time.sleep(5)
-
