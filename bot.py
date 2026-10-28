@@ -195,7 +195,6 @@ def auto_create_vless_account(username, days):
             
     except Exception as e:
         return False, str(e)
-
 # ============================================================
 # 🗑️ အကောင့်ဖျက်မည့် Function
 # ============================================================
@@ -646,7 +645,7 @@ def admin_reject(call):
     if call.from_user.id != ADMIN_ID: return
     user_id = int(call.data.split("_")[1])
     bot.send_message(user_id, "❌ သင့်ငွေပေးချေမှုကို ပယ်ဖျက်လိုက်ပါသည်။")
-    bot.edit_message_caption(chat_id=call.message.chat.id, message_id=call.message.message_id, caption=call.message.caption + "\n\n❌ ပယ်ဖျက်လိုက်ပါပြီ။")
+    bot.edit_message_caption(chat_id=call.message.chat.id, message_id=call.mess    bot.edit_message_caption(chat_id=call.message.chat.id, message_id=call.message.message_id, caption=call.message.caption + "\n\n❌ ပယ်ဖျက်လိုက်ပါပြီ။")
 
 # ============================================================
 # 🚀 Bot စတင်ခြင်း (Internet ပြတ်လည်း အလိုအလျောက် ပြန်စမည်)
@@ -661,4 +660,4 @@ if __name__ == '__main__':
             print("5 စက္ကန့်အတွင်း ပြန်လည် စတင်ပါမည်...")
             time.sleep(5)
 
-  
+
