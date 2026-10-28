@@ -516,7 +516,7 @@ def verify_join(call):
 @bot.callback_query_handler(func=lambda call: call.data == "check_data")
 def check_data_menu(call):
     user_id = call.from_user.id
-    bot.answer_callback_query(call.id, "⏳ Data စစ်ဆေး
+    bot.answer_callback_query(call.id, " ဤ Data မှားယွင်းနေပါသည်")
     text = get_remaining_data(user_id)
     bot.send_message(call.message.chat.id, text, parse_mode='Markdown')
 
