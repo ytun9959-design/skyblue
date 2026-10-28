@@ -259,6 +259,8 @@ def get_remaining_data(user_id, search_email=None):
                 if search_email.lower() in c.get("email", "").lower():
                     found = True
                     email = c.get("email")
+                    
+                    # Data တွက်ချက်မှု (Bytes ကနေ GB ပြောင်းမယ်)
                     total_bytes = c.get("totalGB", 0)
                     up_bytes = c.get("up", 0)
                     down_bytes = c.get("down", 0)
