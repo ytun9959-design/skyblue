@@ -129,7 +129,6 @@ def get_next_vip_number():
 # 🛠️ Channel Join စစ်ဆေးသည့် Function
 # ============================================================
 def check_join(user_id):
-    # 🚨 မှတ်တမ်းဖိုင်ထဲမှာ ရှိရင် တိုက်ရိုက် ဖြတ်မယ်
     if str(user_id) in joined_users:
         return True
     try:
@@ -196,7 +195,6 @@ def auto_create_vless_account(username, days):
             
     except Exception as e:
         return False, str(e)
-
 # ============================================================
 # 🗑️ အကောင့်ဖျက်မည့် Function
 # ============================================================
@@ -271,7 +269,6 @@ def send_welcome(message):
     user_names[str(user_id)] = message.from_user.full_name
     save_data()
     
-    # 🚨 Channel ဝင်ထားခြင်း ရှိ/မရှိ စစ်ဆေးမည်
     if check_join(user_id):
         show_main_menu(message.chat.id)
     else:
@@ -287,7 +284,6 @@ def send_welcome(message):
             parse_mode='Markdown'
         )
 
-# --- Admin Commands ---
 @bot.message_handler(commands=['help'])
 def help_command(message):
     if message.from_user.id != ADMIN_ID: return
@@ -490,3 +486,177 @@ def process_buy_credit(call):
 @bot.callback_query_handler(func=lambda call: call.data.startswith('buy_'))
 def process_buy(call):
     key = call.data.replace("buy_", "")
+    info = SERVERS.get(key)
+    if not info: return
+    user_data[call.from_user.id] = ("vpn", key)
+    text = (f"✅ သင်ရွေးချယ်လိုက်သည်: {info['name']}\n"
+            f"💰 ဈေးနှုန်း: {info['price']}\n\n"
+            f"📌 ငွေပေးချေရန်:\n\n{PAYMENT_INFO}\n\n"
+            f"ငွေလွှဲပြီးပါက ပြေစာ (screenshot) ကို ဤနေရာတွင် ပို့ပါ။")
+    bot.send_message(call.message.chat.id, text, parse_mode='Markdown')
+
+@bot.callback_query_handler(func=lambda call: call.data.startswith('vipbuy_'))
+def process_vipbuy(call):
+    key = call.data.replace("vipbuy_", "")
+    info = RESELLER_SERVERS.get(key)
+    user_id = call.from_user.id
+    uid_str = str(user_id)
+    
+    if not info: return
+    
+    credits = user_credits.get(uid_str, 0)
+    if credits < info['credits']:
+        bot.answer_callback_query(call.id, "❌ Credit မလုံလောက်ပါ။", show_alert=True)
+        return
+    
+    bot.answer_callback_query(call.id, "⏳ VPN အကောင့် ဖန်တီးနေသည်...")
+    
+    user_credits[uid_str] -= info['credits']
+    save_data()
+    
+    while True:
+        vip_num = get_next_vip_number()
+        username = f"VIP{vip_num}_{user_id}"
+        success, result = auto_create_vless_account(username, info["days"])
+        if success: break
+        elif result == "Duplicate": continue
+        else: break
+
+    if success:
+        bot.send_message(user_id, f"🎉 သင့် VPN အကောင့် အဆင်သင့်ဖြစ်ပါပြီ!\n\n📄 လင့်ခ်:\n`{result}`\n\n💰 လက်ကျန် Credit: **{user_credits[uid_str]}**", parse_mode='Markdown')
+        try:
+            bot.send_message(ADMIN_ID, f"🔔 Reseller ဝယ်ယူမှု\n👤 ID: {user_id}\n🎫 အကောင့်: {username}\n💰 ကျန်ရှိ Credit: {user_credits[uid_str]}")
+        except:
+            pass
+    else:
+        user_credits[uid_str] += info['credits']
+        save_data()
+        bot.send_message(user_id, f"⚠️ Error: အကောင့်ဖန်တီးမရပါ။ Credit ပြန်အမ်းပြီးပါပြီ။\n{result}")
+
+# --- 🚨 ပြေစာပုံ လက်ခံခြင်း ---
+@bot.message_handler(content_types=['photo'])
+def handle_receipt(message):
+    try:
+        user_id = message.from_user.id
+        user_names[str(user_id)] = message.from_user.full_name
+        save_data()
+        
+        if user_id not in user_data:
+            bot.reply_to(message, "ကျေးဇူးပြု၍ /start နှိပ်ပြီး ဝယ်ယူလိုသည့် ပက်ကေ့ချ်ကို အရင်ရွေးချယ်ပါ။")
+            return
+
+        order_type, key = user_data[user_id]
+        
+        if order_type == "credit":
+            info = CREDIT_PACKAGES.get(key)
+            action_btn = "credit"
+        else:
+            info = SERVERS.get(key)
+            action_btn = "vpn"
+
+        if not info:
+            bot.reply_to(message, "⚠️ သင့်ရွေးချယ်မှု သက်တမ်းကုန်သွားပါပြီ။ /start နှိပ်ပြီး ပြန်ရွေးပါ။")
+            return
+
+        markup = types.InlineKeyboardMarkup()
+        markup.add(types.InlineKeyboardButton(text="✅ အတည်ပြုမည်", callback_data=f"approve_{action_btn}_{user_id}_{key}"))
+        markup.add(types.InlineKeyboardButton(text="❌ ပယ်ဖျက်မည်", callback_data=f"reject_{user_id}"))
+
+        caption = (f"🔔 ငွေပေးချေမှု အသစ်\n\n"
+                   f"👤 အသုံးပြုသူ: {message.from_user.full_name}\n"
+                   f"🆔 ID: {user_id}\n"
+                   f"🌐 ဝန်ဆောင်မှု: {info['name']}\n"
+                   f"💰 ဈေးနှုန်း: {info['price']}")
+
+        bot.send_photo(ADMIN_ID, message.photo[-1].file_id, caption=caption, reply_markup=markup)
+        bot.reply_to(message, "✅ ပြေစာကို လက်ခံရရှိပါပြီ။\nAdmin အတည်ပြုသည်အထိ ခဏစောင့်ဆိုင်းပေးပါ။")
+        
+    except Exception as e:
+        bot.send_message(ADMIN_ID, f"⚠️ ပြေစာ လက်ခံရာတွင် Error တက်နေသည်:\n{e}")
+        bot.reply_to(message, "⚠️ စနစ်ချို့ယွင်းမှု ရှိနေပါသည်။ ခဏနေမှ ပြန်ကြိုးစားပါ။")
+
+# --- 🚨 Admin အတည်ပြုခြင်း (ချက်ချင်း အလုပ်ဖြစ်မည်) ---
+@bot.callback_query_handler(func=lambda call: call.data.startswith('approve_'))
+def admin_approve(call):
+    if call.from_user.id != ADMIN_ID: return
+    parts = call.data.split("_")
+    action_type = parts[1] 
+    user_id = int(parts[2])
+    key = parts[3]
+    
+    try:
+        bot.edit_message_caption(chat_id=call.message.chat.id, message_id=call.message.message_id, caption=call.message.caption + "\n\n✅ အတည်ပြုပြီးပါပြီ။ ဆောင်ရွက်နေသည်...")
+    except:
+        pass
+
+    if action_type == "credit":
+        try:
+            credit_amount = CREDIT_PACKAGES[key]['credits']
+            uid_str = str(user_id)
+            user_credits[uid_str] = user_credits.get(uid_str, 0) + credit_amount
+            save_data()
+            
+            bot.send_message(user_id, f"✅ သင့်အကောင့်ထဲကို **{credit_amount} Credits** ဖြည့်သွင်းပြီးပါပြီ။\n💰 လက်ကျန် Credit: **{user_credits[uid_str]}**", parse_mode='Markdown')
+            try:
+                bot.send_message(call.message.chat.id, f"✅ {user_id} အတွက် Credit {credit_amount} ဖြည့်ပြီးပါပြီ။")
+            except:
+                pass
+        except Exception as e:
+            try:
+                bot.send_message(call.message.chat.id, f"⚠️ Credit ဖြည့်ရာတွင် Error တက်ပါသည်: {e}")
+            except:
+                pass
+    
+    else:
+        def process_vpn():
+            try:
+                info = SERVERS.get(key, {"days": 30})
+                while True:
+                    vip_num = get_next_vip_number()
+                    username = f"VIP{vip_num}_{user_id}"
+                    success, result = auto_create_vless_account(username, info["days"])
+                    if success: break
+                    elif result == "Duplicate": continue
+                    else: break
+
+                if success:
+                    bot.send_message(user_id, f"🎉 သင့် VPN အကောင့် အဆင်သင့်ဖြစ်ပါပြီ!\n\n📄 လင့်ခ်:\n`{result}`\n\n*(Copy ကူးယူပါ)*", parse_mode='Markdown')
+                    try:
+                        bot.send_message(call.message.chat.id, f"✅ `{username}` အကောင့်ဖန်တီးပြီး ပို့ပေးလိုက်ပါပြီ။")
+                    except:
+                        pass
+                else:
+                    try:
+                        bot.send_message(ADMIN_ID, f"⚠️ Error: {username} ဖန်တီးရာတွင် အမှားအယွင်းရှိပါသည်။\n{result}")
+                        bot.send_message(call.message.chat.id, "❌ အကောင့်ဖန်တီးရာတွင် Error တက်နေပါသည်။")
+                    except:
+                        pass
+            except Exception as e:
+                try:
+                    bot.send_message(ADMIN_ID, f"⚠️ VPN ဖန်တီးရာတွင် Error တက်ပါသည်: {e}")
+                except:
+                    pass
+        
+        threading.Thread(target=process_vpn).start()
+
+@bot.callback_query_handler(func=lambda call: call.data.startswith('reject_'))
+def admin_reject(call):
+    if call.from_user.id != ADMIN_ID: return
+    user_id = int(call.data.split("_")[1])
+    bot.send_message(user_id, "❌ သင့်ငွေပေးချေမှုကို ပယ်ဖျက်လိုက်ပါသည်။")    bot.edit_message_caption(chat_id=call.message.chat.id, message_id=call.message.message_id, caption=call.message.caption + "\n\n❌ ပယ်ဖျက်လိုက်ပါပြီ။")
+
+# ============================================================
+# 🚀 Bot စတင်ခြင်း (Internet ပြတ်လည်း အလိုအလျောက် ပြန်စမည်)
+# ============================================================
+if __name__ == '__main__':
+    print("🤖 Sky Blue Reseller Bot စတင်နေသည်...")
+    while True:
+        try:
+            bot.infinity_polling(timeout=10, long_polling_timeout=5)
+        except Exception as e:
+            print(f"Error တက်သွားပါသည်: {e}")
+            print("5 စက္ကန့်အတွင်း ပြန်လည် စတင်ပါမည်...")
+            time.sleep(5)
+    bot.edit_message_caption(chat_id=call.message.chat.id, message_id=call.message.message_id, caption=c
+
+
