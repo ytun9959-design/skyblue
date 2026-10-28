@@ -62,7 +62,7 @@ HOST = "portal-as.ruijienetworks.com"
 bot = telebot.TeleBot(BOT_TOKEN)
 
 # ============================================================
-# 💰 Credit Package များနှင့် ဝယ်ယူနိုင်သည့် စျေးနှုန်းများ
+# 💰 ဈေးနှုန်းသတ်မှတ်ချက်များ
 # ============================================================
 CREDIT_PACKAGES = {
     "credit50": {"name": "50 Credits", "price": "5000 Ks", "credits": 50},
@@ -70,14 +70,12 @@ CREDIT_PACKAGES = {
     "credit200": {"name": "200 Credits", "price": "18000 Ks", "credits": 200},
 }
 
-# 🚨 Reseller အတွက် VPN (Credit နဲ့)
 RESELLER_SERVERS = {
     "res1d":  {"name": "🇹🇭 ၁ ရက် စမ်းသပ် (5 Credits - 5GB)", "credits": 5, "days": 1, "gb": 5},
     "res15d": {"name": "🇹🇭 ၁၅ ရက် VPN (25 Credits - 30GB)", "credits": 25, "days": 15, "gb": 30},
     "res30d": {"name": "🇹🇭 ၃၀ ရက် VPN (50 Credits - 60GB)", "credits": 50, "days": 30, "gb": 60},
 }
 
-# 🚨 သာမန်ဝယ်ယူသူများအတွက် VPN
 SERVERS = {
     "norm1d":  {"name": "🇹🇭 Thailand VPN - ၁ ရက် (5GB)", "price": "1000 Ks", "days": 1, "gb": 5},
     "norm15d": {"name": "🇹🇭 Thailand VPN - ၁၅ ရက် (30GB)", "price": "2500 Ks", "days": 15, "gb": 30},
@@ -90,12 +88,12 @@ user_data = {}
 # 🚨 ဒေတာ သိမ်းဆည်းရန် ဖိုင်များ
 CREDIT_FILE = "reseller_credits.json"
 JOINED_FILE = "joined_users.json"
-VPN_DATA_FILE = "vpn_accounts.json" # ဝယ်သူရဲ့ လင့်ခ်နဲ့ Data သိမ်းရန်
+VPN_DATA_FILE = "vpn_accounts.json"
 
 user_credits = {}
 user_names = {}
 joined_users = set()
-vpn_accounts = {} # { user_id: [ {link, expire, gb, email} ] }
+vpn_accounts = {} 
 
 def load_data():
     global user_credits, user_names, joined_users, vpn_accounts
@@ -187,7 +185,6 @@ def auto_create_vless_account(username, days, gb):
         expire_time = int((datetime.datetime.now() + datetime.timedelta(days=days)).timestamp() * 1000)
         new_uuid = str(uuid.uuid4())
         
-        # 1GB = 1073741824 bytes
         total_gb_bytes = int(gb) * 1073741824 
         
         add_url = f"{PANEL_URL}/{WEB_BASE_PATH}/panel/api/inbounds/addClient"
@@ -198,7 +195,7 @@ def auto_create_vless_account(username, days, gb):
                 "flow": "",
                 "email": username,
                 "limitIp": 1, 
-                "totalGB": total_gb_bytes, # 🚨 Data ကန့်သတ်ချက်
+                "totalGB": total_gb_bytes, 
                 "expiryTime": expire_time,
                 "enable": True,
                 "tgId": "",
@@ -226,7 +223,7 @@ def auto_create_vless_account(username, days, gb):
         return False, str(e), None
 
 # ============================================================
-# 📊 လက်ကျန် Data စစ်ဆေးသည့် Function
+# 📊 လက်ကျန် Data စစ်ဆေးသည့် Function (အချိန်ဇုန် အတိအကျ)
 # ============================================================
 def get_remaining_data(user_id):
     if str(user_id) not in vpn_accounts or not vpn_accounts[str(user_id)]:
@@ -268,26 +265,31 @@ def get_remaining_data(user_id):
                 text += f"❌ `{email}` (ဖျက်ခံထားရသည် / မတွေ့ပါ)\n\n"
                 continue
                 
-            total_gb = client_data.get("totalGB", 0) / 1073741824
-            up = client_data.get("up", 0) / 1073741824
-            down = client_data.get("down", 0) / 1073741824
-            used = up + down
-            remaining = total_gb - used
+            total_bytes = client_data.get("totalGB", 0)
+            up_bytes = client_data.get("up", 0)
+            down_bytes = client_data.get("down", 0)
             
-            if remaining < 0: remaining = 0
+            total_gb = total_bytes / 1073741824
+            used_gb = (up_bytes + down_bytes) / 1073741824
+            remaining_gb = total_gb - used_gb
             
+            if remaining_gb < 0: remaining_gb = 0
+            
+            # 🚨 မြန်မာစံတော်ချိန်အတိုင်း အတိအကျ တွက်ချက်ခြင်း (UTC + 6:30)
             expiry = client_data.get("expiryTime", 0)
             if expiry == 0:
                 exp_date = "မကုန်ဆုံးပါ"
             else:
-                exp_date = datetime.datetime.fromtimestamp(expiry / 1000).strftime('%Y-%m-%d %H:%M')
+                exp_utc = datetime.datetime.fromtimestamp(expiry / 1000, tz=datetime.timezone.utc)
+                exp_mm = exp_utc + datetime.timedelta(hours=6, minutes=30)
+                exp_date = exp_mm.strftime('%Y-%m-%d %H:%M')
             
             text += (
                 f"👤 **အကောင့်:** `{email}`\n"
                 f"📅 **ကုန်ဆုံးမည့်ရက်:** {exp_date}\n"
-                f"📦 **သတ်မှတ် Data:** {total_gb:.1f} GB\n"
-                f"📉 **သုံးပြီး:** {used:.2f} GB\n"
-                f"✅ **လက်ကျန်:** **{remaining:.2f} GB**\n\n"
+                f"📦 **သတ်မှတ် Data:** {total_gb:.2f} GB\n"
+                f"📉 **သုံးပြီး:** {used_gb:.2f} GB\n"
+                f"✅ **လက်ကျန်:** **{remaining_gb:.2f} GB**\n\n"
             )
             
         return text
@@ -446,7 +448,9 @@ def list_vpn_command(message):
             if expiry == 0:
                 expire_date = "မကုန်ဆုံးပါ"
             else:
-                expire_date = datetime.datetime.fromtimestamp(expiry / 1000).strftime('%Y-%m-%d %H:%M')
+                exp_utc = datetime.datetime.fromtimestamp(expiry / 1000, tz=datetime.timezone.utc)
+                exp_mm = exp_utc + datetime.timedelta(hours=6, minutes=30)
+                expire_date = exp_mm.strftime('%Y-%m-%d %H:%M')
             msg += f"{i}. `{email}` (ကုန်ဆုံး: {expire_date})\n"
         if len(msg) > 4000:
             for i in range(0, len(msg), 4000):
@@ -516,7 +520,7 @@ def verify_join(call):
 @bot.callback_query_handler(func=lambda call: call.data == "check_data")
 def check_data_menu(call):
     user_id = call.from_user.id
-    bot.answer_callback_query(call.id, " ဤ Data မှားယွင်းနေပါသည်")
+    bot.answer_callback_query(call.id, "⏳ Data စစ်ဆေးနေသည်...")
     text = get_remaining_data(user_id)
     bot.send_message(call.message.chat.id, text, parse_mode='Markdown')
 
@@ -628,7 +632,6 @@ def process_vipbuy(call):
         else: break
 
     if success:
-        # မှတ်တမ်းတင်မယ်
         if uid_str not in vpn_accounts:
             vpn_accounts[uid_str] = []
         vpn_accounts[uid_str].append({
@@ -679,7 +682,7 @@ def handle_receipt(message):
         markup.add(types.InlineKeyboardButton(text="❌ ပယ်ဖျက်မည်", callback_data=f"reject_{user_id}"))
 
         caption = (f"🔔 ငွေပေးချေမှု အသစ်\n\n"
-                   f"👤 အသုံးပြုသူ: {message.from_user.full_name}\n"
+                                      f"👤 အသုံးပြုသူ: {message.from_user.full_name}\n"
                    f"🆔 ID: {user_id}\n"
                    f"🌐 ဝန်ဆောင်မှု: {info['name']}\n"
                    f"💰 ဈေးနှုန်း: {info['price']}")
@@ -736,7 +739,6 @@ def admin_approve(call):
                     else: break
 
                 if success:
-                    # မှတ်တမ်းတင်မယ်
                     uid_str = str(user_id)
                     if uid_str not in vpn_accounts:
                         vpn_accounts[uid_str] = []
@@ -775,7 +777,7 @@ def admin_reject(call):
     bot.edit_message_caption(chat_id=call.message.chat.id, message_id=call.message.message_id, caption=call.message.caption + "\n\n❌ ပယ်ဖျက်လိုက်ပါပြီ။")
 
 # ============================================================
-# 🚀 Bot စတင်ခြင်း (Internet ပြတ်လည်း အလိုအလျောက် ပြန်စမည်)
+# 🚀 Bot စတင်ခြင်း
 # ============================================================
 if __name__ == '__main__':
     print("🤖 Sky Blue Reseller Bot စတင်နေသည်...")
@@ -786,4 +788,3 @@ if __name__ == '__main__':
             print(f"Error တက်သွားပါသည်: {e}")
             print("5 စက္ကန့်အတွင်း ပြန်လည် စတင်ပါမည်...")
             time.sleep(5)
-
