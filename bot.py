@@ -165,7 +165,6 @@ def check_join(user_id):
     except Exception as e:
         print(f"Join Check Error: {e}")
         return False
-
 # ============================================================
 # 🛠️ Panel Login ဝင်ပြီး အကောင့်ဖန်တီးမည့် Function
 # ============================================================
@@ -223,7 +222,7 @@ def auto_create_vless_account(username, days, gb):
         return False, str(e), None
 
 # ============================================================
-# 📊 လက်ကျန် Data စစ်ဆေးသည့် Function (ဖိုင်နာမည် ရှာဖွေမှုပါဝင်သည်)
+# 📊 လက်ကျန် Data စစ်ဆေးသည့် Function (Data အတိအကျပြမည်)
 # ============================================================
 def get_remaining_data(user_id, search_email=None):
     if not search_email and (str(user_id) not in vpn_accounts or not vpn_accounts[str(user_id)]):
@@ -414,6 +413,7 @@ def show_main_menu(chat_id):
         "🔸 Server error ဖြစ်ပါက 100% တာဝန်ယူပါတယ်။\n"
         "🔸 ဆိုင်ဖက်က VPN ပိတ်ခဲ့ရင် လုံးဝတာဝန်မယူပါ။\n"
         "🔸 Data ပမာဏ ပြည့်သွားပါက သက်တမ်းမကုန်သေးလည်း ချိတ်ဆက်မှု ပြတ်တောက်သွားပါမည်။\n\n"
+        "👨‍💻 **Admin ဆက်သွယ်ရန်:** @Kenobe21\n\n"
         "🙏 ဝယ်ယူအားပေးမှုကို အထူးကျေးဇူးတင်ပါတယ်။\n\n"
         "👇 ဝယ်ယူရန် ရွေးချယ်ပါ -"
     )
@@ -845,3 +845,7 @@ if __name__ == '__main__':
             print(f"Error တက်သွားပါသည်: {e}")
             print("5 စက္ကန့်အတွင်း ပြန်လည် စတင်ပါမည်...")
             time.sleep(5)
+
+
+
+
