@@ -38,7 +38,7 @@ HOST = "portal-as.ruijienetworks.com"
 bot = telebot.TeleBot(BOT_TOKEN)
 
 # ============================================================
-# 💰 Coin နှင့် ဈေးနှုန်းများ
+# 💰 Coin နှင့် ဈေးနှုန်းများ (GB ပြင်ဆင်ပြီး)
 # ============================================================
 COIN_PER_JOIN = 2 
 
@@ -54,7 +54,7 @@ user_data = {}
 # 🚨 ဒေတာ သိမ်းဆည်းရန် ဖိုင်များ
 DB_FILE = "users_coin.json"
 HISTORY_FILE = "purchase_history.json"
-COUNTER_FILE = "vpn_counter.txt" # 🚨 အကောင့်နာမည် အစဉ်လိုက်ထွက်ရန်
+COUNTER_FILE = "vpn_counter.txt" 
 
 users_db = {} 
 purchase_history = [] 
@@ -356,10 +356,13 @@ def process_buy_coin(call):
         })
         save_data()
         
+        # 🚨 ဒီနေရာမှာ သက်တမ်းနဲ့ GB ကို ပြပေးလိုက်ပါတယ်
         bot.send_message(
             call.message.chat.id, 
             f"🎉 သင့် VPN အကောင့် အဆင်သင့်ဖြစ်ပါပြီ!\n\n"
-            f"📄 လင့်ခ်:\n`{result}`\n\n"
+            f"⏳ **သက်တမ်း:** {info['days']} ရက်\n"
+            f"📦 **Data ပမာဏ:** {info['gb']} GB\n\n"
+            f"📄 **လင့်ခ်:**\n`{result}`\n\n"
             f"💰 လက်ကျန် Coin: **{users_db[user_id]['coins']}** 🪙\n\n"
             f"*(နောက်ပိုင်းကျရင် Server အသစ်တွေ တိုးပေးပါမယ်နော်။)*", 
             parse_mode='Markdown'
@@ -452,7 +455,6 @@ def list_vpn_command(message):
 @bot.message_handler(commands=['delete'])
 def delete_command(message):
     if message.from_user.id != ADMIN_ID: return
-    # 🚨 နာမည်မှာ Space တွေ ပါနေတဲ့အတွက် စာသားအကုန်လုံးကို ယူဖို့ ပြင်ထားပါတယ်
     command_parts = message.text.split(maxsplit=1)
     if len(command_parts) > 1:
         username = command_parts[1].strip()
