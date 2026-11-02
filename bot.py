@@ -23,15 +23,15 @@ CHANNEL_USERNAME = "@Skyblue021"
 BOT_LINK = "https://t.me/Sky_Blue_Vpn_bot?start="
 
 # 🚨 Japan VPS ၏ Panel အချက်အလက်များ
-PANEL_URL = "https://172.238.20.21:8080"  # 🚨 Port ကို 8080 ပြောင်းထားပါတယ်
+PANEL_URL = "https://172.238.20.21:8080"  
 WEB_BASE_PATH = "သင့်_WebBasePath"     # 🚨 သင့် Panel ရဲ့ WebBasePath ကို ထည့်ပါ (ဥပမာ - X5JAs7BeSKXU038)
 PANEL_USER = "admin"
 PANEL_PASS = "admin123" # 🚨 Panel Password ကို ထည့်ပါ
 INBOUND_ID = 1 
 
 SERVER_IP = "172.238.20.21"
-SERVER_PORT = "8080" # 🚨 ဒီနေရာကိုလည်း 8080 ပြောင်းထားပါတယ်
-PATH = "/skyblue"     # 🚨 Path ကို /skyblue ပြောင်းထားပါတယ်
+SERVER_PORT = "8080" 
+PATH = "/skyblue"     
 HOST = "portal-as.ruijienetworks.com" 
 
 bot = telebot.TeleBot(BOT_TOKEN)
@@ -254,7 +254,7 @@ def show_main_menu(chat_id, user_id):
     markup.add(types.InlineKeyboardButton(text="🔗 သူငယ်ချင်းဖိတ်ခေါ်ရန် (Link ယူရန်)", callback_data="get_ref_link"))
     
     welcome_text = (
-        "🇯🇵 **Japan Coin & VPN Bot မှ ကြိုဆိုပါတယ်** 🇯🇵\n\n"
+        "🌟 **Sky Blue Coin & VPN Bot မှ ကြိုဆိုပါတယ်** 🌟\n\n"
         f"💰 **သင့်လက်ကျန် Coin:** {coins} 🪙\n\n"
         "📌 **အသုံးပြုနည်း**\n"
         f"၁။ သူငယ်ချင်းများကို ဖိတ်ခေါ်ပြီး Coin ရယူပါ။ (၁ ယောက် = {COIN_PER_JOIN} Coin)\n"
@@ -360,7 +360,7 @@ def back_main(call):
     show_main_menu(call.message.chat.id, user_id)
 
 # ============================================================
-# 🚨 Admin Commands
+# 🚨 Admin Commands (List, Delete, Cut Coin, History)
 # ============================================================
 @bot.message_handler(commands=['list'])
 def list_vpn_command(message):
@@ -484,7 +484,7 @@ def history_command(message):
 # 🚀 Bot စတင်ခြင်း
 # ============================================================
 if __name__ == '__main__':
-    print("🤖 Japan VPN Coin Bot စတင်နေသည်...")
+    print("🤖 Sky Blue Coin Bot စတင်နေသည်...")
     while True:
         try:
             bot.infinity_polling(timeout=10, long_polling_timeout=5)
