@@ -381,7 +381,7 @@ def back_main(call):
     user_id = str(call.from_user.id)
     bot.delete_message(call.message.chat.id, call.message.message_id)
     show_main_menu(call.message.chat.id, user_id)
-    # ============================================================
+# ============================================================
 # 🚨 Admin Commands
 # ============================================================
 @bot.message_handler(commands=['help'])
@@ -393,6 +393,7 @@ def help_command(message):
     help_text = (
         "🤖 **Admin အတွက် အသုံးပြုနိုင်သော Command များ**\n\n"
         "🔹 **/help** - ဒီစာမျက်နှာကို ဖွင့်ရန်။\n\n"
+        "🔹 **/online** - လက်ရှိ Bot ကို သုံးနေတဲ့ လူဦးရေကို ကြည့်ရန်။\n\n"
         "🔹 **/list** - VPS အတွင်းရှိ VPN အကောင့်စာရင်းနှင့် သက်တမ်းကုန်မည့်ရက်ကို ကြည့်ရန်။\n\n"
         "🔹 **/delete [အကောင့်နာမည်]** - VPN အကောင့်ကို ဖျက်ရန်။ (ဥပမာ - `/delete ♛ Sᴋʏ Bʟᴜᴇ Oғғɪᴄɪᴀʟ ♛ 2`)\n\n"
         "🔹 **/addcoin [User_ID] [Coin]** - လူတစ်ယောက်ကို Coin ဖြည့်ပေးရန်။ (ဥပမာ - `/addcoin 8823368996 50`)\n\n"
@@ -400,6 +401,21 @@ def help_command(message):
         "🔹 **/history** - ဝယ်ယူမှု မှတ်တမ်းများကို ကြည့်ရန်။"
     )
     bot.reply_to(message, help_text, parse_mode='Markdown')
+
+@bot.message_handler(commands=['online'])
+def online_users_command(message):
+    if message.from_user.id != ADMIN_ID: return
+    
+    total_users = len(users_db)
+    # 🚨 Active User ဆိုတာ Bot ကို Start နှိပ်ထားတဲ့သူတွေ ဖြစ်ပါတယ်
+    online_count = len(active_users)
+    
+    text = (
+        "📊 **Bot အသုံးပြုသူ အခြေအနေ**\n\n"
+        f"👥 **စုစုပေါင်း အသုံးပြုသူ:** {total_users} ယောက်\n"
+        f"🟢 **လက်ရှိ အွန်လိုင်း (ရောက်သုံးနေသူ):** {online_count} ယောက်"
+    )
+    bot.reply_to(message, text, parse_mode='Markdown')
 
 @bot.message_handler(commands=['list'])
 def list_vpn_command(message):
@@ -559,3 +575,4 @@ if __name__ == '__main__':
             print(f"Error တက်သွားပါသည်: {e}")
             print("5 စက္ကန့်အတွင်း ပြန်လည် စတင်ပါမည်...")
             time.sleep(5)
+
