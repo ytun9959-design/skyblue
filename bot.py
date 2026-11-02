@@ -17,10 +17,10 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 BOT_TOKEN = "8609181446:AAFVndFscKHkqr6OgdmRXnvjWcQ6gRTfNq0"
 ADMIN_ID = 5617375002
 
-# 🚨 သင့် Channel နဲ့ Bot လင့်ခ်
+# 🚨 သင့် Channel နဲ့ Bot လင့်ခ် (ပြင်ဆင်ပြီး)
 CHANNEL_LINK = "https://t.me/Skyblue021"
 CHANNEL_USERNAME = "@Skyblue021"
-BOT_LINK = "https://t.me/Sky_Blue_Vpn_bot?start="
+BOT_LINK = "https://t.me/SkyBlueVpn0912_bot?start=" # 🚨 သင့် Bot Username အတိုင်း ပြင်ထားပါတယ်
 
 # 🚨 Japan VPS ၏ Panel အချက်အလက်များ
 PANEL_URL = "https://172.238.20.21:8080"  
@@ -360,8 +360,24 @@ def back_main(call):
     show_main_menu(call.message.chat.id, user_id)
 
 # ============================================================
-# 🚨 Admin Commands (List, Delete, Cut Coin, History)
+# 🚨 Admin Commands (List, Delete, Cut Coin, History, Help)
 # ============================================================
+@bot.message_handler(commands=['help'])
+def help_command(message):
+    if message.from_user.id != ADMIN_ID: 
+        bot.reply_to(message, "❌ ဒီ Command ကို Admin ပဲ အသုံးပြုခွင့်ရှိပါတယ်။")
+        return
+        
+    help_text = (
+        "🤖 **Admin အတွက် အသုံးပြုနိုင်သော Command များ**\n\n"
+        "🔹 **/help** - ဒီစာမျက်နှာကို ဖွင့်ရန်။\n\n"
+        "🔹 **/list** - VPS အတွင်းရှိ VPN အကောင့်စာရင်းနှင့် သက်တမ်းကုန်မည့်ရက်ကို ကြည့်ရန်။\n\n"
+        "🔹 **/delete [အကောင့်နာမည်]** - VPN အကောင့်ကို ဖျက်ရန်။ (ဥပမာ - `/delete COIN_5617375002_1699999`)\n\n"
+        "🔹 **/cutcoin [User_ID] [Coin]** - လူတစ်ယောက်ဆီမှ Coin နှုတ်ရန်။ (ဥပမာ - `/cutcoin 8823368996 50`)\n\n"
+        "🔹 **/history** - ဝယ်ယူမှု မှတ်တမ်းများကို ကြည့်ရန်။"
+    )
+    bot.reply_to(message, help_text, parse_mode='Markdown')
+
 @bot.message_handler(commands=['list'])
 def list_vpn_command(message):
     if message.from_user.id != ADMIN_ID: return
@@ -487,7 +503,7 @@ if __name__ == '__main__':
     print("🤖 Sky Blue Coin Bot စတင်နေသည်...")
     while True:
         try:
-            bot.infinity_polling(timeout=10, long_polling_timeout=5)
-        except Exception as e:
-            print(f"Error တက်သွားပါသည်: {e}")
-            time.sleep(5)
+    bot.infinity_polling(timeout=10, long_polling_timeout=5)
+except Exception as e:
+    print(f"Error တက်သွားပါသည်: {e}")
+    time.sleep(5)
