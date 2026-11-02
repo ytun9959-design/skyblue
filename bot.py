@@ -55,12 +55,14 @@ user_data = {}
 DB_FILE = "users_coin.json"
 HISTORY_FILE = "purchase_history.json"
 COUNTER_FILE = "vpn_counter.txt" 
+ACTIVE_USERS_FILE = "active_users.json"
 
 users_db = {} 
 purchase_history = [] 
+active_users = set()
 
 def load_data():
-    global users_db, purchase_history
+    global users_db, purchase_history, active_users
     try:
         if os.path.exists(DB_FILE):
             with open(DB_FILE, "r", encoding="utf-8") as f:
@@ -68,6 +70,9 @@ def load_data():
         if os.path.exists(HISTORY_FILE):
             with open(HISTORY_FILE, "r", encoding="utf-8") as f:
                 purchase_history = json.load(f)
+        if os.path.exists(ACTIVE_USERS_FILE):
+            with open(ACTIVE_USERS_FILE, "r", encoding="utf-8") as f:
+                active_users = set(json.load(f))
     except Exception as e:
         print(f"Data Load Error: {e}")
 
@@ -77,6 +82,8 @@ def save_data():
             json.dump(users_db, f, ensure_ascii=False, indent=4)
         with open(HISTORY_FILE, "w", encoding="utf-8") as f:
             json.dump(purchase_history, f, ensure_ascii=False, indent=4)
+        with open(ACTIVE_USERS_FILE, "w", encoding="utf-8") as f:
+            json.dump(list(active_users), f)
     except Exception as e:
         print(f"Data Save Error: {e}")
 
@@ -219,6 +226,10 @@ def delete_vless_account(username):
 def send_welcome(message):
     user_id = str(message.from_user.id)
     
+    # 🚨 အွန်လိုင်းစာရင်းထဲ ထည့်မယ်
+    active_users.add(user_id)
+    save_data()
+
     if user_id not in users_db:
         users_db[user_id] = {"coins": 0, "joined": False, "referred_by": None, "vpn": []}
     
@@ -334,7 +345,6 @@ def process_buy_coin(call):
     users_db[user_id]["coins"] -= info["coin"]
     save_data()
     
-    # 🚨 အကောင့်နာမည်ကို Function ကနေ ယူမယ်
     username = get_next_vpn_name()
     success, result = auto_create_vless_account(username, info["days"], info["gb"])
 
@@ -356,7 +366,6 @@ def process_buy_coin(call):
         })
         save_data()
         
-        # 🚨 ဒီနေရာမှာ သက်တမ်းနဲ့ GB ကို ပြပေးလိုက်ပါတယ်
         bot.send_message(
             call.message.chat.id, 
             f"🎉 သင့် VPN အကောင့် အဆင်သင့်ဖြစ်ပါပြီ!\n\n"
@@ -407,7 +416,6 @@ def online_users_command(message):
     if message.from_user.id != ADMIN_ID: return
     
     total_users = len(users_db)
-    # 🚨 Active User ဆိုတာ Bot ကို Start နှိပ်ထားတဲ့သူတွေ ဖြစ်ပါတယ်
     online_count = len(active_users)
     
     text = (
@@ -575,4 +583,3 @@ if __name__ == '__main__':
             print(f"Error တက်သွားပါသည်: {e}")
             print("5 စက္ကန့်အတွင်း ပြန်လည် စတင်ပါမည်...")
             time.sleep(5)
-
