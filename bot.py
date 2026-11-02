@@ -17,16 +17,16 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 BOT_TOKEN = "8609181446:AAFVndFscKHkqr6OgdmRXnvjWcQ6gRTfNq0"
 ADMIN_ID = 5617375002
 
-# 🚨 သင့် Channel နဲ့ Bot လင့်ခ် (ပြင်ဆင်ပြီး)
+# 🚨 သင့် Channel နဲ့ Bot လင့်ခ်
 CHANNEL_LINK = "https://t.me/Skyblue021"
 CHANNEL_USERNAME = "@Skyblue021"
-BOT_LINK = "https://t.me/SkyBlueVpn0912_bot?start=" # 🚨 သင့် Bot Username အတိုင်း ပြင်ထားပါတယ်
+BOT_LINK = "https://t.me/SkyBlueVpn0912_bot?start=" 
 
 # 🚨 Japan VPS ၏ Panel အချက်အလက်များ
 PANEL_URL = "https://172.238.20.21:8080"  
-WEB_BASE_PATH = "သင့်_WebBasePath"     # 🚨 သင့် Panel ရဲ့ WebBasePath ကို ထည့်ပါ (ဥပမာ - X5JAs7BeSKXU038)
+WEB_BASE_PATH = "သင့်_WebBasePath"     
 PANEL_USER = "admin"
-PANEL_PASS = "admin123" # 🚨 Panel Password ကို ထည့်ပါ
+PANEL_PASS = "admin123" 
 INBOUND_ID = 1 
 
 SERVER_IP = "172.238.20.21"
@@ -39,7 +39,7 @@ bot = telebot.TeleBot(BOT_TOKEN)
 # ============================================================
 # 💰 Coin နှင့် ဈေးနှုန်းများ
 # ============================================================
-COIN_PER_JOIN = 2 # ၁ ယောက် Join ရင် ၂ Coin ရမယ်
+COIN_PER_JOIN = 2 
 
 SERVERS = {
     "coin1d":  {"name": "🇯🇵 ၁ ရက် VPN (10 Coin)", "coin": 10, "days": 1, "gb": 5},
@@ -50,7 +50,6 @@ SERVERS = {
 
 user_data = {}
 
-# 🚨 ဒေတာ သိမ်းဆည်းရန်
 DB_FILE = "users_coin.json"
 HISTORY_FILE = "purchase_history.json"
 users_db = {} 
@@ -80,7 +79,7 @@ def save_data():
 load_data()
 
 # ============================================================
-# 🛠️ Channel Join စစ်ဆေးသည့် Function
+# 🛠️ Functions
 # ============================================================
 def check_join(user_id):
     try:
@@ -92,9 +91,6 @@ def check_join(user_id):
         print(f"Join Check Error: {e}")
         return False
 
-# ============================================================
-# 🛠️ VPS မှာ VPN အကောင့်ဖန်တီးသည့် Function
-# ============================================================
 def auto_create_vless_account(username, days, gb):
     try:
         session = requests.Session()
@@ -148,9 +144,6 @@ def auto_create_vless_account(username, days, gb):
     except Exception as e:
         return False, str(e)
 
-# ============================================================
-# 🗑️ VPS မှာ VPN အကောင့်ဖျက်သည့် Function
-# ============================================================
 def delete_vless_account(username):
     try:
         session = requests.Session()
@@ -204,7 +197,6 @@ def send_welcome(message):
     if user_id not in users_db:
         users_db[user_id] = {"coins": 0, "joined": False, "referred_by": None, "vpn": []}
     
-    # Referral စနစ် (သူငယ်ချင်းဖိတ်ခေါ်မှု)
     args = message.text.split()
     if len(args) > 1:
         referrer_id = args[1]
@@ -360,7 +352,7 @@ def back_main(call):
     show_main_menu(call.message.chat.id, user_id)
 
 # ============================================================
-# 🚨 Admin Commands (List, Delete, Cut Coin, History, Help)
+# 🚨 Admin Commands
 # ============================================================
 @bot.message_handler(commands=['help'])
 def help_command(message):
@@ -503,7 +495,8 @@ if __name__ == '__main__':
     print("🤖 Sky Blue Coin Bot စတင်နေသည်...")
     while True:
         try:
-    bot.infinity_polling(timeout=10, long_polling_timeout=5)
-except Exception as e:
-    print(f"Error တက်သွားပါသည်: {e}")
-    time.sleep(5)
+            bot.infinity_polling(timeout=10, long_polling_timeout=5)
+        except Exception as e:
+            print(f"Error တက်သွားပါသည်: {e}")
+            print("5 စက္ကန့်အတွင်း ပြန်လည် စတင်ပါမည်...")
+            time.sleep(5)
