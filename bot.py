@@ -268,7 +268,6 @@ def get_ref_link(call):
         f"*(ဒီလင့်ခ်ကို ကူးယူပြီး သူငယ်ချင်းများကို ပို့ပေးပါ။ သူတို့ဝင်လာတိုင်း သင့်အကောင့်ထဲကို Coin {COIN_PER_JOIN} ခု အလိုအလျောက် ရောက်သွားပါမယ်။)*"
     )
     bot.send_message(call.message.chat.id, text, parse_mode='Markdown')
-
 @bot.callback_query_handler(func=lambda call: call.data == "buy_vpn")
 def buy_vpn_menu(call):
     user_id = str(call.from_user.id)
@@ -501,7 +500,7 @@ def cut_coin_command(message):
 def history_command(message):
     if message.from_user.id != ADMIN_ID: return
     if not purchase_history:
-             bot.reply_to(message, "📁 ဝယ်ယူမှု မှတ်တမ်း မရှိသေးပါ။")
+        bot.reply_to(message, "📁 ဝယ်ယူမှု မှတ်တမ်း မရှိသေးပါ။")
         return
         
     msg = "📋 **ဝယ်ယူမှု မှတ်တမ်း (မကြာသေးမီက)**\n\n"
