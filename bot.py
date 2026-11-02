@@ -8,6 +8,7 @@ import urllib3
 import os
 import time
 import threading
+import random # 🚨 ကျပန်းနံပါတ်အတွက် ထည့်ထားပါတယ်
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -87,13 +88,13 @@ def save_data():
     except Exception as e:
         print(f"Data Save Error: {e}")
 
-# 🚨 အကောင့်နာမည် အစဉ်လိုက်ထုတ်ပေးသည့် Function
+# 🚨 အကောင့်နာမည် အစဉ်လိုက်ထုတ်ပေးသည့် Function (ကျပန်းနံပါတ်ပါ ထည့်ထားသည်)
 def get_next_vpn_name():
     try:
         if not os.path.exists(COUNTER_FILE):
             with open(COUNTER_FILE, "w") as f:
                 f.write("1")
-            return "♛ Sᴋʏ Bʟᴜᴇ Oғғɪᴄɪᴀʟ ♛ Free 1"
+            return f"♛ Sᴋʏ Bʟᴜᴇ Oғғɪᴄɪᴀʟ ♛ Free {random.randint(100, 999)}"
         
         with open(COUNTER_FILE, "r") as f:
             current_num = int(f.read().strip())
@@ -103,11 +104,11 @@ def get_next_vpn_name():
             f.write(str(next_num))
         
         if current_num == 1:
-            return "♛ Sᴋʏ Bʟᴜᴇ Oғғɪᴄɪᴀʟ ♛ Free 1"
+            return f"♛ Sᴋʏ Bʟᴜᴇ Oғғɪᴄɪᴀʟ ♛ Free {random.randint(100, 999)}"
         else:
-            return f"♛ Sᴋʏ Bʟᴜᴇ Oғғɪᴄɪᴀʟ ♛ {current_num}"
+            return f"♛ Sᴋʏ Bʟᴜᴇ Oғғɪᴄɪᴀʟ ♛ {current_num}_{random.randint(100, 999)}"
     except:
-        return "♛ Sᴋʏ Bʟᴜᴇ Oғғɪᴄɪᴀʟ ♛ Free 1"
+        return f"♛ Sᴋʏ Bʟᴜᴇ Oғғɪᴄɪᴀʟ ♛ Free {random.randint(100, 999)}"
 
 load_data()
 
@@ -404,7 +405,7 @@ def help_command(message):
         "🔹 **/help** - ဒီစာမျက်နှာကို ဖွင့်ရန်။\n\n"
         "🔹 **/online** - လက်ရှိ Bot ကို သုံးနေတဲ့ လူဦးရေကို ကြည့်ရန်။\n\n"
         "🔹 **/list** - VPS အတွင်းရှိ VPN အကောင့်စာရင်းနှင့် သက်တမ်းကုန်မည့်ရက်ကို ကြည့်ရန်။\n\n"
-        "🔹 **/delete [အကောင့်နာမည်]** - VPN အကောင့်ကို ဖျက်ရန်။ (ဥပမာ - `/delete ♛ Sᴋʏ Bʟᴜᴇ Oғғɪᴄɪᴀʟ ♛ 2`)\n\n"
+        "🔹 **/delete [အကောင့်နာမည်]** - VPN အကောင့်ကို ဖျက်ရန်။ (ဥပမာ - `/delete ♛ Sᴋʏ Bʟᴜᴇ Oғғɪᴄɪᴀʟ ♛ Free 123`)\n\n"
         "🔹 **/addcoin [User_ID] [Coin]** - လူတစ်ယောက်ကို Coin ဖြည့်ပေးရန်။ (ဥပမာ - `/addcoin 8823368996 50`)\n\n"
         "🔹 **/cutcoin [User_ID] [Coin]** - လူတစ်ယောက်ဆီမှ Coin နှုတ်ရန်။ (ဥပမာ - `/cutcoin 8823368996 50`)\n\n"
         "🔹 **/history** - ဝယ်ယူမှု မှတ်တမ်းများကို ကြည့်ရန်။"
