@@ -14,14 +14,14 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 # ============================================================
 # ⚙️ သင့် Japan VPS အသစ်၏ အချက်အလက်များ
 # ============================================================
-BOT_TOKEN = "8609181446:AAFVndFscKHkqr6OgdmRXnvjWcQ6gRTfNq0"
+BOT_TOKEN = "9080434007:AAGGgaF1Wial-6FINqGZehMLacvcabYyRt0"
 ADMIN_ID = 5617375002
 ADMIN_CONTACT = "@Kenobe21" 
 
 # 🚨 သင့် Channel နဲ့ Bot လင့်ခ်
 CHANNEL_LINK = "https://t.me/Skyblue021"
 CHANNEL_USERNAME = "@Skyblue021"
-BOT_LINK = "https://t.me/SkyBlueVpn0912_bot?start=" 
+BOT_LINK = "https://t.me/SkyBlueFreevpn_bot?start=" 
 
 # 🚨 Japan VPS ၏ Panel အချက်အလက်များ
 PANEL_URL = "https://172.238.20.21:21117"  
@@ -38,7 +38,7 @@ HOST = "portal-as.ruijienetworks.com"
 bot = telebot.TeleBot(BOT_TOKEN)
 
 # ============================================================
-# 💰 Coin နှင့် ဈေးနှုန်းများ (GB ပြင်ဆင်ပြီး)
+# 💰 Coin နှင့် ဈေးနှုန်းများ
 # ============================================================
 COIN_PER_JOIN = 2 
 
@@ -381,7 +381,7 @@ def back_main(call):
     user_id = str(call.from_user.id)
     bot.delete_message(call.message.chat.id, call.message.message_id)
     show_main_menu(call.message.chat.id, user_id)
-# ============================================================
+    # ============================================================
 # 🚨 Admin Commands
 # ============================================================
 @bot.message_handler(commands=['help'])
@@ -559,4 +559,3 @@ if __name__ == '__main__':
             print(f"Error တက်သွားပါသည်: {e}")
             print("5 စက္ကန့်အတွင်း ပြန်လည် စတင်ပါမည်...")
             time.sleep(5)
-
