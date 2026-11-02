@@ -12,7 +12,7 @@ import threading
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # ============================================================
-# ⚙️ သင့် VPS အသစ်၏ အချက်အလက်များ (ဒီနေရာမှာ ပြင်ပါ)
+# ⚙️ သင့် Japan VPS အသစ်၏ အချက်အလက်များ
 # ============================================================
 BOT_TOKEN = "8609181446:AAFVndFscKHkqr6OgdmRXnvjWcQ6gRTfNq0"
 ADMIN_ID = 5617375002
@@ -22,17 +22,17 @@ CHANNEL_LINK = "https://t.me/Skyblue021"
 CHANNEL_USERNAME = "@Skyblue021"
 BOT_LINK = "https://t.me/Sky_Blue_Vpn_bot?start="
 
-# 🚨 VPS အသစ်၏ Panel အချက်အလက်များ
-PANEL_URL = "https://သင့်_VPS_IP:Port"  
-WEB_BASE_PATH = "သင့်_WebBasePath"     
+# 🚨 Japan VPS ၏ Panel အချက်အလက်များ
+PANEL_URL = "https://172.238.20.21:8080"  # 🚨 Port ကို 8080 ပြောင်းထားပါတယ်
+WEB_BASE_PATH = "သင့်_WebBasePath"     # 🚨 သင့် Panel ရဲ့ WebBasePath ကို ထည့်ပါ (ဥပမာ - X5JAs7BeSKXU038)
 PANEL_USER = "admin"
-PANEL_PASS = "admin123"
+PANEL_PASS = "admin123" # 🚨 Panel Password ကို ထည့်ပါ
 INBOUND_ID = 1 
 
-SERVER_IP = "သင့်_VPS_IP"
-SERVER_PORT = "80"
-PATH = "/"
-HOST = "portal-as.ruijienetworks.com"
+SERVER_IP = "172.238.20.21"
+SERVER_PORT = "8080" # 🚨 ဒီနေရာကိုလည်း 8080 ပြောင်းထားပါတယ်
+PATH = "/skyblue"     # 🚨 Path ကို /skyblue ပြောင်းထားပါတယ်
+HOST = "portal-as.ruijienetworks.com" 
 
 bot = telebot.TeleBot(BOT_TOKEN)
 
@@ -42,10 +42,10 @@ bot = telebot.TeleBot(BOT_TOKEN)
 COIN_PER_JOIN = 2 # ၁ ယောက် Join ရင် ၂ Coin ရမယ်
 
 SERVERS = {
-    "coin1d":  {"name": "🇹🇭 ၁ ရက် VPN (10 Coin)", "coin": 10, "days": 1, "gb": 5},
-    "coin3d":  {"name": "🇹🇭 ၃ ရက် VPN (30 Coin)", "coin": 30, "days": 3, "gb": 10},
-    "coin7d":  {"name": "🇹🇭 ၇ ရက် VPN (60 Coin)", "coin": 60, "days": 7, "gb": 20},
-    "coin10d": {"name": "🇹🇭 ၁၀ ရက် VPN (100 Coin)", "coin": 100, "days": 10, "gb": 30},
+    "coin1d":  {"name": "🇯🇵 ၁ ရက် VPN (10 Coin)", "coin": 10, "days": 1, "gb": 5},
+    "coin3d":  {"name": "🇯🇵 ၃ ရက် VPN (30 Coin)", "coin": 30, "days": 3, "gb": 10},
+    "coin7d":  {"name": "🇯🇵 ၇ ရက် VPN (60 Coin)", "coin": 60, "days": 7, "gb": 20},
+    "coin10d": {"name": "🇯🇵 ၁၀ ရက် VPN (100 Coin)", "coin": 100, "days": 10, "gb": 30},
 }
 
 user_data = {}
@@ -54,7 +54,7 @@ user_data = {}
 DB_FILE = "users_coin.json"
 HISTORY_FILE = "purchase_history.json"
 users_db = {} 
-purchase_history = [] # မှတ်တမ်းသိမ်းရန်
+purchase_history = [] 
 
 def load_data():
     global users_db, purchase_history
@@ -254,7 +254,7 @@ def show_main_menu(chat_id, user_id):
     markup.add(types.InlineKeyboardButton(text="🔗 သူငယ်ချင်းဖိတ်ခေါ်ရန် (Link ယူရန်)", callback_data="get_ref_link"))
     
     welcome_text = (
-        "🌟 **Sky Blue Coin & VPN Bot မှ ကြိုဆိုပါတယ်** 🌟\n\n"
+        "🇯🇵 **Japan Coin & VPN Bot မှ ကြိုဆိုပါတယ်** 🇯🇵\n\n"
         f"💰 **သင့်လက်ကျန် Coin:** {coins} 🪙\n\n"
         "📌 **အသုံးပြုနည်း**\n"
         f"၁။ သူငယ်ချင်းများကို ဖိတ်ခေါ်ပြီး Coin ရယူပါ။ (၁ ယောက် = {COIN_PER_JOIN} Coin)\n"
@@ -313,11 +313,9 @@ def process_buy_coin(call):
     
     bot.answer_callback_query(call.id, "⏳ VPN အကောင့် ဖန်တီးနေသည်...")
     
-    # Coin နှုတ်မယ်
     users_db[user_id]["coins"] -= info["coin"]
     save_data()
     
-    # VPN ဖန်တီးမယ်
     username = f"COIN_{user_id}_{int(time.time())}"
     success, result = auto_create_vless_account(username, info["days"], info["gb"])
 
@@ -329,7 +327,6 @@ def process_buy_coin(call):
             "gb": info["gb"]
         })
         
-        # မှတ်တမ်းတင်မယ်
         purchase_history.append({
             "user_id": user_id,
             "username": username,
@@ -352,7 +349,6 @@ def process_buy_coin(call):
         except:
             pass
     else:
-        # Error တက်ရင် Coin ပြန်အမ်းမယ်
         users_db[user_id]["coins"] += info["coin"]
         save_data()
         bot.send_message(call.message.chat.id, f"⚠️ Error: အကောင့်ဖန်တီးမရပါ။ Coin ပြန်အမ်းပြီးပါပြီ။\n{result}")
@@ -364,7 +360,7 @@ def back_main(call):
     show_main_menu(call.message.chat.id, user_id)
 
 # ============================================================
-# 🚨 Admin Commands (List, Delete, Cut Coin, History)
+# 🚨 Admin Commands
 # ============================================================
 @bot.message_handler(commands=['list'])
 def list_vpn_command(message):
@@ -469,7 +465,6 @@ def history_command(message):
         return
         
     msg = "📋 **ဝယ်ယူမှု မှတ်တမ်း (မကြာသေးမီက)**\n\n"
-    # နောက်ဆုံး ၂၀ ခုကို ပြမယ်
     for item in purchase_history[-20:]:
         msg += (
             f"👤 User: `{item['user_id']}`\n"
@@ -489,7 +484,7 @@ def history_command(message):
 # 🚀 Bot စတင်ခြင်း
 # ============================================================
 if __name__ == '__main__':
-    print("🤖 Sky Blue Coin Bot စတင်နေသည်...")
+    print("🤖 Japan VPN Coin Bot စတင်နေသည်...")
     while True:
         try:
             bot.infinity_polling(timeout=10, long_polling_timeout=5)
