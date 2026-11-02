@@ -491,3 +491,43 @@ def cut_coin_command(message):
                     pass
             else:
                 bot.reply_to(message, f"⚠️ သူ့ဆီမှာ Coin {current} ပဲ ရှိပါတယ်။")
+                            else:
+                bot.reply_to(message, "❌ အဲ့ဒီ User ID ကို ရှာမတွေ့ပါ။")
+    except:
+        bot.reply_to(message, "⚠️ ပုံစံမှားနေပါတယ်။ ဥပမာ - `/cutcoin 8823368996 50` လို့ ရိုက်ပါ။")
+
+@bot.message_handler(commands=['history'])
+def history_command(message):
+    if message.from_user.id != ADMIN_ID: return
+    if not purchase_history:
+        bot.reply_to(message, "📁 ဝယ်ယူမှု မှတ်တမ်း မရှိသေးပါ။")
+        return
+        
+    msg = "📋 **ဝယ်ယူမှု မှတ်တမ်း (မကြာသေးမီက)**\n\n"
+    for item in purchase_history[-20:]:
+        msg += (
+            f"👤 User: `{item['user_id']}`\n"
+            f"🎫 အကောင့်: `{item['username']}`\n"
+            f"📅 ရက်: {item['days']} ရက် | 📦 Data: {item['gb']} GB\n"
+            f"💰 Coin: {item['coin']} | 🕒 {item['date']}\n"
+            f"--- --- ---\n"
+        )
+        
+    if len(msg) > 4000:
+        for i in range(0, len(msg), 4000):
+            bot.send_message(message.chat.id, msg[i:i+4000], parse_mode='Markdown')
+    else:
+        bot.send_message(message.chat.id, msg, parse_mode='Markdown')
+
+# ============================================================
+# 🚀 Bot စတင်ခြင်း
+# ============================================================
+if __name__ == '__main__':
+    print("🤖 Sky Blue Coin Bot စတင်နေသည်...")
+    while True:
+        try:
+            bot.infinity_polling(timeout=10, long_polling_timeout=5)
+        except Exception as e:
+            print(f"Error တက်သွားပါသည်: {e}")
+            print("5 စက္ကန့်အတွင်း ပြန်လည် စတင်ပါမည်...")
+            time.sleep(5)
