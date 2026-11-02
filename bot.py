@@ -23,7 +23,7 @@ CHANNEL_LINK = "https://t.me/Skyblue021"
 CHANNEL_USERNAME = "@Skyblue021"
 BOT_LINK = "https://t.me/SkyBlueVpn0912_bot?start=" 
 
-# 🚨 Japan VPS ၏ Panel အချက်အလက်များ (အသစ်ပြောင်းထားသည်)
+# 🚨 Japan VPS ၏ Panel အချက်အလက်များ
 PANEL_URL = "https://172.238.20.21:21117"  
 WEB_BASE_PATH = "KvpUWFyN7fHaUAh"     
 PANEL_USER = "SHGLCix5OL"
@@ -43,17 +43,19 @@ bot = telebot.TeleBot(BOT_TOKEN)
 COIN_PER_JOIN = 2 
 
 SERVERS = {
-    "coin1d":  {"name": "🇯🇵 ၁ ရက် VPN (10 Coin)", "coin": 10, "days": 1, "gb": 5},
-    "coin3d":  {"name": "🇯🇵 ၃ ရက် VPN (30 Coin)", "coin": 30, "days": 3, "gb": 10},
-    "coin7d":  {"name": "🇯🇵 ၇ ရက် VPN (60 Coin)", "coin": 60, "days": 7, "gb": 20},
-    "coin10d": {"name": "🇯🇵 ၁၀ ရက် VPN (100 Coin)", "coin": 100, "days": 10, "gb": 30},
+    "coin1d":  {"name": "🇯🇵 ၁ ရက် VPN (10 Coin - 2GB)", "coin": 10, "days": 1, "gb": 2},
+    "coin3d":  {"name": "🇯🇵 ၃ ရက် VPN (30 Coin - 5GB)", "coin": 30, "days": 3, "gb": 5},
+    "coin7d":  {"name": "🇯🇵 ၇ ရက် VPN (60 Coin - 10GB)", "coin": 60, "days": 7, "gb": 10},
+    "coin10d": {"name": "🇯🇵 ၁၀ ရက် VPN (100 Coin - 13GB)", "coin": 100, "days": 10, "gb": 13},
 }
 
 user_data = {}
 
-# 🚨 ဒေတာ သိမ်းဆည်းရန် ဖိုင်များ (Coin များ မပျောက်စေရန်)
+# 🚨 ဒေတာ သိမ်းဆည်းရန် ဖိုင်များ
 DB_FILE = "users_coin.json"
 HISTORY_FILE = "purchase_history.json"
+COUNTER_FILE = "vpn_counter.txt" # 🚨 အကောင့်နာမည် အစဉ်လိုက်ထွက်ရန်
+
 users_db = {} 
 purchase_history = [] 
 
@@ -77,6 +79,28 @@ def save_data():
             json.dump(purchase_history, f, ensure_ascii=False, indent=4)
     except Exception as e:
         print(f"Data Save Error: {e}")
+
+# 🚨 အကောင့်နာမည် အစဉ်လိုက်ထုတ်ပေးသည့် Function
+def get_next_vpn_name():
+    try:
+        if not os.path.exists(COUNTER_FILE):
+            with open(COUNTER_FILE, "w") as f:
+                f.write("1")
+            return "♛ Sᴋʏ Bʟᴜᴇ Oғғɪᴄɪᴀʟ ♛ Free 1"
+        
+        with open(COUNTER_FILE, "r") as f:
+            current_num = int(f.read().strip())
+        
+        next_num = current_num + 1
+        with open(COUNTER_FILE, "w") as f:
+            f.write(str(next_num))
+        
+        if current_num == 1:
+            return "♛ Sᴋʏ Bʟᴜᴇ Oғғɪᴄɪᴀʟ ♛ Free 1"
+        else:
+            return f"♛ Sᴋʏ Bʟᴜᴇ Oғғɪᴄɪᴀʟ ♛ {current_num}"
+    except:
+        return "♛ Sᴋʏ Bʟᴜᴇ Oғғɪᴄɪᴀʟ ♛ Free 1"
 
 load_data()
 
@@ -310,7 +334,8 @@ def process_buy_coin(call):
     users_db[user_id]["coins"] -= info["coin"]
     save_data()
     
-    username = f"COIN_{user_id}_{int(time.time())}"
+    # 🚨 အကောင့်နာမည်ကို Function ကနေ ယူမယ်
+    username = get_next_vpn_name()
     success, result = auto_create_vless_account(username, info["days"], info["gb"])
 
     if success:
@@ -366,7 +391,7 @@ def help_command(message):
         "🤖 **Admin အတွက် အသုံးပြုနိုင်သော Command များ**\n\n"
         "🔹 **/help** - ဒီစာမျက်နှာကို ဖွင့်ရန်။\n\n"
         "🔹 **/list** - VPS အတွင်းရှိ VPN အကောင့်စာရင်းနှင့် သက်တမ်းကုန်မည့်ရက်ကို ကြည့်ရန်။\n\n"
-        "🔹 **/delete [အကောင့်နာမည်]** - VPN အကောင့်ကို ဖျက်ရန်။ (ဥပမာ - `/delete COIN_5617375002_1699999`)\n\n"
+        "🔹 **/delete [အကောင့်နာမည်]** - VPN အကောင့်ကို ဖျက်ရန်။ (ဥပမာ - `/delete ♛ Sᴋʏ Bʟᴜᴇ Oғғɪᴄɪᴀʟ ♛ 2`)\n\n"
         "🔹 **/addcoin [User_ID] [Coin]** - လူတစ်ယောက်ကို Coin ဖြည့်ပေးရန်။ (ဥပမာ - `/addcoin 8823368996 50`)\n\n"
         "🔹 **/cutcoin [User_ID] [Coin]** - လူတစ်ယောက်ဆီမှ Coin နှုတ်ရန်။ (ဥပမာ - `/cutcoin 8823368996 50`)\n\n"
         "🔹 **/history** - ဝယ်ယူမှု မှတ်တမ်းများကို ကြည့်ရန်။"
@@ -427,14 +452,15 @@ def list_vpn_command(message):
 @bot.message_handler(commands=['delete'])
 def delete_command(message):
     if message.from_user.id != ADMIN_ID: return
-    text_parts = message.text.split()
-    if len(text_parts) > 1:
-        username = text_parts[1].strip()
+    # 🚨 နာမည်မှာ Space တွေ ပါနေတဲ့အတွက် စာသားအကုန်လုံးကို ယူဖို့ ပြင်ထားပါတယ်
+    command_parts = message.text.split(maxsplit=1)
+    if len(command_parts) > 1:
+        username = command_parts[1].strip()
         bot.reply_to(message, f"⏳ '{username}' ကို ဖျက်နေသည်...")
         success, result = delete_vless_account(username)
         bot.reply_to(message, f"{'✅' if success else '⚠️'} {result}")
     else:
-        msg = bot.reply_to(message, "🗑️ ဖျက်ချင်တဲ့ အကောင့်နာမည် (ဖိုင်နာမည်) ကို ရိုက်ထည့်ပါ:")
+        msg = bot.reply_to(message, "🗑️ ဖျက်ချင်တဲ့ အကောင့်နာမည်ကို ရိုက်ထည့်ပါ:")
         bot.register_next_step_handler(msg, lambda m: process_delete_account(m, delete_vless_account))
 
 def process_delete_account(message, func):
