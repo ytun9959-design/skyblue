@@ -51,6 +51,7 @@ SERVERS = {
 
 user_data = {}
 
+# 🚨 ဒေတာ သိမ်းဆည်းရန် ဖိုင်များ (Coin များ မပျောက်စေရန်)
 DB_FILE = "users_coin.json"
 HISTORY_FILE = "purchase_history.json"
 users_db = {} 
@@ -352,7 +353,6 @@ def back_main(call):
     user_id = str(call.from_user.id)
     bot.delete_message(call.message.chat.id, call.message.message_id)
     show_main_menu(call.message.chat.id, user_id)
-
 # ============================================================
 # 🚨 Admin Commands
 # ============================================================
@@ -491,8 +491,8 @@ def cut_coin_command(message):
                     pass
             else:
                 bot.reply_to(message, f"⚠️ သူ့ဆီမှာ Coin {current} ပဲ ရှိပါတယ်။")
-                            else:
-                bot.reply_to(message, "❌ အဲ့ဒီ User ID ကို ရှာမတွေ့ပါ။")
+        else:
+            bot.reply_to(message, "❌ အဲ့ဒီ User ID ကို ရှာမတွေ့ပါ။")
     except:
         bot.reply_to(message, "⚠️ ပုံစံမှားနေပါတယ်။ ဥပမာ - `/cutcoin 8823368996 50` လို့ ရိုက်ပါ။")
 
@@ -531,3 +531,4 @@ if __name__ == '__main__':
             print(f"Error တက်သွားပါသည်: {e}")
             print("5 စက္ကန့်အတွင်း ပြန်လည် စတင်ပါမည်...")
             time.sleep(5)
+
