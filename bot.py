@@ -16,7 +16,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 # ============================================================
 BOT_TOKEN = "8609181446:AAFVndFscKHkqr6OgdmRXnvjWcQ6gRTfNq0"
 ADMIN_ID = 5617375002
-ADMIN_CONTACT = "@Kenobe21" # 🚨 Admin ဆက်သွယ်ရန် Username ကို ထည့်ပြီးပါပြီ
+ADMIN_CONTACT = "@Kenobe21" 
 
 # 🚨 သင့် Channel နဲ့ Bot လင့်ခ်
 CHANNEL_LINK = "https://t.me/Skyblue021"
@@ -498,8 +498,10 @@ def cut_coin_command(message):
         bot.reply_to(message, "⚠️ ပုံစံမှားနေပါတယ်။ ဥပမာ - `/cutcoin 8823368996 50` လို့ ရိုက်ပါ။")
 
 @bot.message_handler(commands=['history'])
-def histo    if not purchase_history:
-        bot.reply_to(message, "📁 ဝယ်ယူမှု မှတ်တမ်း မရှိသေးပါ။")
+def history_command(message):
+    if message.from_user.id != ADMIN_ID: return
+    if not purchase_history:
+             bot.reply_to(message, "📁 ဝယ်ယူမှု မှတ်တမ်း မရှိသေးပါ။")
         return
         
     msg = "📋 **ဝယ်ယူမှု မှတ်တမ်း (မကြာသေးမီက)**\n\n"
@@ -529,5 +531,4 @@ if __name__ == '__main__':
         except Exception as e:
             print(f"Error တက်သွားပါသည်: {e}")
             print("5 စက္ကန့်အတွင်း ပြန်လည် စတင်ပါမည်...")
-            time.sleep(5)ry_command(message):
-    
+            time.sleep(5)
