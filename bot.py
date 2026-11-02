@@ -16,6 +16,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 # ============================================================
 BOT_TOKEN = "8609181446:AAFVndFscKHkqr6OgdmRXnvjWcQ6gRTfNq0"
 ADMIN_ID = 5617375002
+ADMIN_CONTACT = "@Kenobe21" # 🚨 Admin ဆက်သွယ်ရန် Username ကို ထည့်ပြီးပါပြီ
 
 # 🚨 သင့် Channel နဲ့ Bot လင့်ခ်
 CHANNEL_LINK = "https://t.me/Skyblue021"
@@ -251,6 +252,7 @@ def show_main_menu(chat_id, user_id):
         "📌 **အသုံးပြုနည်း**\n"
         f"၁။ သူငယ်ချင်းများကို ဖိတ်ခေါ်ပြီး Coin ရယူပါ။ (၁ ယောက် = {COIN_PER_JOIN} Coin)\n"
         "၂။ ရရှိထားသော Coin များဖြင့် VPN လင့်ခ်များ ဝယ်ယူပါ။\n\n"
+        f"👨‍💻 **အကူအညီလိုပါက ဆက်သွယ်ရန်:** {ADMIN_CONTACT}\n\n"
         "👇 ရွေးချယ်ပါ -"
     )
     bot.send_message(chat_id, welcome_text, reply_markup=markup, parse_mode='Markdown')
@@ -333,7 +335,8 @@ def process_buy_coin(call):
             call.message.chat.id, 
             f"🎉 သင့် VPN အကောင့် အဆင်သင့်ဖြစ်ပါပြီ!\n\n"
             f"📄 လင့်ခ်:\n`{result}`\n\n"
-            f"💰 လက်ကျန် Coin: **{users_db[user_id]['coins']}** 🪙", 
+            f"💰 လက်ကျန် Coin: **{users_db[user_id]['coins']}** 🪙\n\n"
+            f"*(နောက်ပိုင်းကျရင် Server အသစ်တွေ တိုးပေးပါမယ်နော်။)*", 
             parse_mode='Markdown'
         )
         try:
@@ -365,6 +368,7 @@ def help_command(message):
         "🔹 **/help** - ဒီစာမျက်နှာကို ဖွင့်ရန်။\n\n"
         "🔹 **/list** - VPS အတွင်းရှိ VPN အကောင့်စာရင်းနှင့် သက်တမ်းကုန်မည့်ရက်ကို ကြည့်ရန်။\n\n"
         "🔹 **/delete [အကောင့်နာမည်]** - VPN အကောင့်ကို ဖျက်ရန်။ (ဥပမာ - `/delete COIN_5617375002_1699999`)\n\n"
+        "🔹 **/addcoin [User_ID] [Coin]** - လူတစ်ယောက်ကို Coin ဖြည့်ပေးရန်။ (ဥပမာ - `/addcoin 8823368996 50`)\n\n"
         "🔹 **/cutcoin [User_ID] [Coin]** - လူတစ်ယောက်ဆီမှ Coin နှုတ်ရန်။ (ဥပမာ - `/cutcoin 8823368996 50`)\n\n"
         "🔹 **/history** - ဝယ်ယူမှု မှတ်တမ်းများကို ကြည့်ရန်။"
     )
@@ -440,6 +444,34 @@ def process_delete_account(message, func):
     success, result = func(username)
     bot.reply_to(message, f"{'✅' if success else '⚠️'} {result}")
 
+@bot.message_handler(commands=['addcoin'])
+def add_coin_command(message):
+    if message.from_user.id != ADMIN_ID: return
+    try:
+        parts = message.text.split()
+        target_user = str(parts[1])
+        amount = int(parts[2])
+        
+        if target_user in users_db:
+            users_db[target_user]["coins"] += amount
+            save_data()
+            bot.reply_to(message, f"✅ User ({target_user}) ဆီသို့ Coin {amount} ဖြည့်ပေးလိုက်ပါပြီ။\n(လက်ကျန်: {users_db[target_user]['coins']})")
+            try:
+                bot.send_message(target_user, f"🎉 Admin မှ သင့်အကောင့်ထဲသို့ Coin {amount} လက်ဆောင်ပေးလိုက်ပါသည်။\n💰 လက်ကျန် Coin: {users_db[target_user]['coins']}")
+            except:
+                pass
+        else:
+            users_db[target_user] = {"coins": amount, "joined": False, "referred_by": None, "vpn": []}
+            save_data()
+            bot.reply_to(message, f"✅ User အသစ် ({target_user}) ကို ဖန်တီးပြီး Coin {amount} ဖြည့်ပေးလိုက်ပါပြီ။")
+            try:
+                bot.send_message(target_user, f"🎉 Admin မှ သင့်အကောင့်ထဲသို့ Coin {amount} လက်ဆောင်ပေးလိုက်ပါသည်။\n💰 လက်ကျန် Coin: {amount}")
+            except:
+                pass
+                
+    except:
+        bot.reply_to(message, "⚠️ ပုံစံမှားနေပါတယ်။ ဥပမာ - `/addcoin 8823368996 50` လို့ ရိုက်ပါ။")
+
 @bot.message_handler(commands=['cutcoin'])
 def cut_coin_command(message):
     if message.from_user.id != ADMIN_ID: return
@@ -466,9 +498,7 @@ def cut_coin_command(message):
         bot.reply_to(message, "⚠️ ပုံစံမှားနေပါတယ်။ ဥပမာ - `/cutcoin 8823368996 50` လို့ ရိုက်ပါ။")
 
 @bot.message_handler(commands=['history'])
-def history_command(message):
-    if message.from_user.id != ADMIN_ID: return
-    if not purchase_history:
+def histo    if not purchase_history:
         bot.reply_to(message, "📁 ဝယ်ယူမှု မှတ်တမ်း မရှိသေးပါ။")
         return
         
@@ -499,4 +529,5 @@ if __name__ == '__main__':
         except Exception as e:
             print(f"Error တက်သွားပါသည်: {e}")
             print("5 စက္ကန့်အတွင်း ပြန်လည် စတင်ပါမည်...")
-            time.sleep(5)
+            time.sleep(5)ry_command(message):
+    
